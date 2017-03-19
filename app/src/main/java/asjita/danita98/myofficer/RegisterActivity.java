@@ -16,6 +16,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import org.jibble.simpleftp.SimpleFTP;
+
+import java.io.File;
+
 public class RegisterActivity extends AppCompatActivity implements View.OnClickListener {
 
     private ImageView imageView;
@@ -24,7 +28,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     private Uri uri;
     private String tag = "18MarchV1";
     private String pathImageString;
-    private boolean aBoolean = true;  // true ==> nonChoose Imange, false ==> Choosed
+    private boolean aBoolean = true; // true ==> nonChoose Image, false ==> Choosed
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +76,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         Log.d(tag, "pathImage ==> " + pathImageString);
 
         aBoolean = false;
+
     }   // onActivity
 
     private void controller() {
@@ -92,7 +97,6 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void onClick(View view) {
 
-
         //for Image
         if (view == imageView) {
 
@@ -104,28 +108,28 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
 
         //For Button
         if (view == button) {
-            // Get Value from EditText
+
+            //Get Value from EditText
             String strName = nameEditText.getText().toString().trim();
             String strUser = userEditText.getText().toString().trim();
             String strPassword = passwordEditText.getText().toString().trim();
+
             if (aBoolean) {
                 Toast.makeText(RegisterActivity.this, "Please Choose Image", Toast.LENGTH_SHORT).show();
-            } else if ((strName.equals(""))|| (strUser.length()==0) ||(strPassword.equals("")) ) {
-                Toast.makeText(RegisterActivity.this, "Please Choose Image", Toast.LENGTH_SHORT).show();
+            } else if ((strName.equals("")) || (strUser.length() == 0) || (strPassword.equals(""))) {
+                Toast.makeText(RegisterActivity.this, "Please Fill All Blank", Toast.LENGTH_SHORT).show();
             } else {
-                uploadToServer(strName,strUser,strName,strPassword);
+                uploadToServer(strName, strUser, strPassword);
             }
 
-
-    } //if
-
+        }   // if
 
 
-}   // onClick
+    }   // onClick
 
-    private void uploadToServer(String strName, String strUser, String strName1, String strPassword) {
+    private void uploadToServer(String strName, String strUser, String strPassword) {
 
-        // Upload Image to Server
+        //Upload Image to Server
         try {
 
             //Change Policy
@@ -133,10 +137,42 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                     .Builder().permitAll().build();
             StrictMode.setThreadPolicy(threadPolicy);
 
-        }catch (Exception e){
-            Log.d(tag,"e upload Image ==>" + e.toString());
+
+            //Upload Image my FTP
+            SimpleFTP simpleFTP = new SimpleFTP();
+            simpleFTP.connect("ftp.swiftcodingthai.com", 21,
+                    "4mar@swiftcodingthai.com", "Abc12345");
+            simpleFTP.bin();
+            simpleFTP.cwd("ImageMaster");
+            simpleFTP.stor(new File(pathImageString));
+            simpleFTP.disconnect();
+
+            //For Upload Text
+            MyPostData myPostData = new MyPostData(RegisterActivity.this,
+                    strName,
+                    strUser,
+                    strPassword,
+                    "http://swiftcodingthai.com/4mar/ImageMaster" +
+                            pathImageString.substring(pathImageString.lastIndexOf("/")));
+
+            myPostData.execute();
+
+            if (Boolean.parseBoolean(myPostData.get())) {
+                finish();
+            } else {
+                Toast.makeText(RegisterActivity.this, "Error", Toast.LENGTH_SHORT).show();
+            }
+
+
+        } catch (Exception e) {
+            Log.d(tag, "e upload Image ==> " + e.toString());
         }
 
-    }
+
+
+
+
+
+    }   // uploadToServer
 
 }   // Main Class

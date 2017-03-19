@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">แบบประเมินความเสี่ยงการเกิดโรคมะเร็ง</string>
+    <string name="app_name">My Officer</string>
     <string name="user">User</string>
     <string name="password">Password</string>
     <string name="login">Login</string>
