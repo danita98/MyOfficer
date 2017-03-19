@@ -10,6 +10,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
 
@@ -17,6 +20,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private EditText userEditText, passwordEditText;
     private Button button;
     private TextView textView;
+    private String strUser, strPassword, strTruePassword;
+    private boolean aBoolean = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,10 +60,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String strPassword = passwordEditText.getText().toString().trim();
 
             //Check Space
-            if (strUser.equals("")|| strPassword.equals("")) {
+            if (strUser.equals("") || strPassword.equals("")) {
                 myAleart("มีช่องว่างค่ะ");
 
-            }else {
+            } else {
                 try {
 
 
@@ -66,24 +71,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     myGetData.execute("http://swiftcodingthai.com/4mar/getMaster.php");
 
                     String strJSON = myGetData.get();
-                            Log.d("19MarchV1", "JSoN ==>" + strJSON);
-            }catch (Exception e){
-                   Log.d("19MarchV1","e ==> " + e.toString());
+                    Log.d("19MarchV1", "JSoN ==>" + strJSON);
+                    JSONArray jsonArray = new JSONArray(strJSON);
+                    for (int i = 0; i < jsonArray.length(); i++) {
+
+                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                        if (strUser.equals(jsonObject.getString("User"))) {
+                            aBoolean = false;
+                            strTruePassword = jsonObject.getString("Password");
+                        }
+
+                    }  //for
+                    if (aBoolean) {
+                        myAleart("User False");
+                    } else if (strPassword.equals(strTruePassword)) {
+                        startActivity(new Intent(MainActivity.this, ShowOfficerActivity.class));
+                        finish();
+                    } else {
+                        myAleart("Password False");
+                    }
+                } catch (Exception e) {
+                    Log.d("19MarchV1", "e ==> " + e.toString());
                 }
             }
-
 
 
         } //if
 
         //For Register
         if (v == textView) {
-            startActivity(new Intent(MainActivity.this,RegisterActivity.class));
+            startActivity(new Intent(MainActivity.this, RegisterActivity.class));
         }
 
     } //onClick
 
     private void myAleart(String strMessage) {
-        Toast.makeText(MainActivity.this, strMessage,Toast.LENGTH_SHORT).show();
+        Toast.makeText(MainActivity.this, strMessage, Toast.LENGTH_SHORT).show();
     }
 }   // Main Class
